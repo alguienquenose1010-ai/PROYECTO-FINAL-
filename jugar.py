@@ -34,18 +34,53 @@ def render_board(board):
     img.save(buffer, format="PNG")
     return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
-def Jugar(page: ft.Page):
+def Jugar(page: ft.Page, jugador1="Jugador 1", jugador2="Jugador 2"):
     board = chess.Board()
 
     img = ft.Image(src=f"data:image/png;base64,{render_board(board)}", width=480, height=480)
     move_input = ft.TextField(label="Movimiento (ej: e2e4)", width=200)
+
+    turn_text = ft.Text(value=f"Turno: {jugador1} (Blancas)", size=20, weight="bold")
+    status_text = ft.Text(value="", size=18, color="red")
 
     def make_move(e):
         try:
             move = chess.Move.from_uci(move_input.value)
             if move in board.legal_moves:
                 board.push(move)
-                img.src_base64 = render_board(board)
+                img.src = f"data:image/png;base64,{render_board(board)}"
+
+                # Actualizar turno
+                if board.turn == chess.WHITE:
+                    turn_text.value = f"Turno: {jugador1} (Blancas)"
+                else:
+                    turn_text.value = f"Turno: {jugador2} (Negras)"
+
+                # Revisar estado del juego
+                if board.is_checkmate():
+                    ganador = jugador1 if board.turn == chess.BLACK else jugador2
+                    perdedor = jugador2 if ganador == jugador1 else jugador1
+                    # Mostrar mensaje en pantalla
+                    status_text.value = f"Victoria de {ganador} sobre {perdedor}"
+                    # Guardar frase completa en archivo
+                    f = open("ganadores.txt", "a")
+                    f.write(f"Victoria de {ganador} sobre {perdedor}\n")
+                    f.close()
+
+                elif board.is_stalemate():
+                    # Mostrar mensaje en pantalla
+                    status_text.value = f"Empate entre {jugador1} y {jugador2}"
+                    # Guardar frase completa en archivo
+                    f = open("ganadores.txt", "a")
+                    f.write(f"Empate entre {jugador1} y {jugador2}\n")
+                    f.close()
+      
+
+                elif board.is_check():
+                    status_text.value = "¡Jaque!"
+                else:
+                    status_text.value = ""
+
                 page.update()
             else:
                 page.snack_bar = ft.SnackBar(ft.Text("Movimiento ilegal"))
@@ -57,12 +92,10 @@ def Jugar(page: ft.Page):
             page.update()
 
     play_button = ft.ElevatedButton(
-    content=ft.Text("Mover"),
-    on_click=make_move
+        content=ft.Text("Mover"),
+        on_click=make_move
     )
 
-
-
     page.controls.clear()
-    page.add(img, move_input, play_button)
+    page.add(img, move_input, play_button, turn_text, status_text)
     page.update()
