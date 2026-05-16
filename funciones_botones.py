@@ -1,4 +1,5 @@
-import flet as ft, chess, chess.svg
+import flet as ft
+from jugar import Jugar
 
 def mostrar_inicio(page):
     page.controls.clear()
@@ -41,7 +42,7 @@ def jugar(page):
     page.add(
         jugador1,
         jugador2,
-        ft.ElevatedButton(content=ft.Text("JUGAR"), on_click=lambda e: JUGAR(page)),
+        ft.ElevatedButton(content=ft.Text("JUGAR"), on_click=lambda e: Jugar(page)),
         ft.ElevatedButton(content=ft.Text("Volver"), on_click=lambda e: mostrar_inicio(page))
     )
 
@@ -65,21 +66,4 @@ def ver_ganadores(page):
 
 
 def JUGAR(page):
-    page.controls.clear()
-
-    board = chess.Board()
-    svg_code = chess.svg.board(board)
-
-    # Mostrar el SVG directamente
-    page.add(
-        ft.Html(
-            content=svg_code,
-            width=600,
-            height=600
-        )
-    )
-
-    page.add(ft.ElevatedButton(content=ft.Text("Volver"), on_click=lambda e: mostrar_inicio(page)))
-    page.vertical_alignment = ft.MainAxisAlignment.CENTER
-    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
-    page.update()
+    Jugar(page)
